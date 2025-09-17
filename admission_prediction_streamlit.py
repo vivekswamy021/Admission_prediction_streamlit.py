@@ -11,25 +11,20 @@ import os
 # ------------------------------
 st.set_page_config(page_title="🎓 Admission Prediction", layout="wide")
 
-# ------------------------------
-# APP TITLE
-# ------------------------------
-st.title("🎓 Admission Probability Prediction")
+st.title("🎓 Admission Probability Prediction & EDA")
 st.markdown("""
-This app predicts the **probability of admission** based on:  
-**GRE Score, TOEFL Score, University Rating, SOP, LOR, CGPA, and Research Experience**.
+Upload the admission dataset to explore it with **Univariate, Bivariate, and Multivariate analysis**,  
+and predict the probability of admission for a candidate.
 """)
 
 # ------------------------------
-# STEP 0: LOAD DATA
+# STEP 0: UPLOAD DATA
 # ------------------------------
 st.sidebar.header("📁 Upload Dataset (CSV)")
 uploaded_file = st.sidebar.file_uploader("Upload admission dataset CSV", type=["csv"])
 
 if uploaded_file:
     df = pd.read_csv(uploaded_file)
-
-    st.sidebar.success("Dataset uploaded successfully!")
 
     # Rename columns for consistency
     df = df.rename(columns={
@@ -41,45 +36,52 @@ if uploaded_file:
         'Chance of Admit ': 'probability_of_admit'
     })
 
-    # ------------------------------
-    # STEP 1: EDA
-    # ------------------------------
-    st.header("🔎 Exploratory Data Analysis (EDA)")
-
-    st.subheader("Dataset Preview")
+    st.header("🔎 Dataset Preview")
     st.dataframe(df.head())
 
-    st.subheader("Dataset Info")
-    buffer = df.info()
-    st.text(buffer)
+    # ------------------------------
+    # INTERACTIVE EDA
+    # ------------------------------
+    st.sidebar.header("📊 EDA Options")
+    analysis_type = st.sidebar.selectbox("Select Analysis Type", 
+                                         ["Univariate Analysis", "Bivariate Analysis", "Multivariate Analysis"])
 
-    st.subheader("Summary Statistics")
-    st.dataframe(df.describe())
+    st.header(f"📈 {analysis_type}")
 
-    st.subheader("Missing Values")
-    st.dataframe(df.isnull().sum())
+    numeric_cols = ['GRE_Score', 'TOEFL_Score', 'University_Rating', 'SOP_Rating', 'LOR', 'CGPA', 'Research']
 
-    st.subheader("Feature Distributions")
-    features = ['GRE_Score', 'TOEFL_Score', 'University_Rating', 'SOP_Rating', 'LOR', 'CGPA', 'Research']
-    for col in features:
+    if analysis_type == "Univariate Analysis":
+        feature = st.selectbox("Select Feature for Histogram", numeric_cols)
+        bins = st.slider("Number of bins", 5, 50, 10)
         fig, ax = plt.subplots()
-        ax.hist(df[col], bins=10, rwidth=0.8)
-        ax.set_xlabel(col)
+        ax.hist(df[feature], bins=bins, rwidth=0.8)
+        ax.set_title(f"Distribution of {feature}")
+        ax.set_xlabel(feature)
         ax.set_ylabel("Count")
-        ax.set_title(f"Distribution of {col}")
         st.pyplot(fig)
 
-    st.subheader("Feature vs Target (Scatter Plots)")
-    for col in ['GRE_Score', 'TOEFL_Score', 'CGPA']:
+    elif analysis_type == "Bivariate Analysis":
+        x_feature = st.selectbox("Select X-axis Feature", numeric_cols)
+        y_feature = st.selectbox("Select Y-axis Feature", numeric_cols)
         fig, ax = plt.subplots()
-        ax.scatter(df[col], df['probability_of_admit'])
-        ax.set_xlabel(col)
-        ax.set_ylabel("Probability of Admit")
-        ax.set_title(f"{col} vs Probability of Admit")
+        ax.scatter(df[x_feature], df[y_feature])
+        ax.set_xlabel(x_feature)
+        ax.set_ylabel(y_feature)
+        ax.set_title(f"{x_feature} vs {y_feature}")
         st.pyplot(fig)
+
+    elif analysis_type == "Multivariate Analysis":
+        st.subheader("Correlation Heatmap")
+        fig, ax = plt.subplots(figsize=(10, 6))
+        sns.heatmap(df[numeric_cols].corr(), annot=True, cmap="coolwarm", ax=ax)
+        st.pyplot(fig)
+
+        st.subheader("Pairplot (Scatterplot Matrix)")
+        pairplot_fig = sns.pairplot(df[numeric_cols])
+        st.pyplot(pairplot_fig.fig)
 
     # ------------------------------
-    # STEP 2: USER INPUT FORM
+    # STEP 1: USER INPUT FORM
     # ------------------------------
     st.sidebar.header("📌 Enter Student Details")
 
@@ -93,9 +95,7 @@ if uploaded_file:
 
     input_features = np.array([[gre, toefl, uni_rating, sop, lor, cgpa, research]])
 
-    # ------------------------------
-    # STEP 3: SHOW USER INPUT FEATURES
-    # ------------------------------
+    # Show input summary
     st.subheader("📝 Input Features Summary")
     input_dict = {
         "GRE Score": gre,
@@ -109,25 +109,25 @@ if uploaded_file:
     st.table(input_dict)
 
     # ------------------------------
-    # STEP 4: MODEL SELECTION
+    # STEP 2: MODEL SELECTION
     # ------------------------------
     st.sidebar.header("⚙️ Choose Model")
+    saved_model_dir = "saved_models"  # folder where your joblib models are stored
 
-    saved_model_dir = "saved_models"
     available_models = {
-        "Linear Regression": os.path.join(saved_models, "linear_regression_model(1).joblib"),
-        "Lasso Regression": os.path.join(saved_models, "lasso_model.joblib"),
-        "Support Vector Regressor (SVR)": os.path.join(saved_models, "svr_model.joblib"),
-        "Decision Tree": os.path.join(saved_models, "decision_tree_model.joblib"),
-        "Random Forest": os.path.join(saved_models, "random_forest_model.joblib"),
-        "K-Nearest Neighbors": os.path.join(saved_models, "knn_model.joblib")
+        "Linear Regression": os.path.join(saved_model_dir, "linear_regression_model (1).joblib"),
+        "Lasso Regression": os.path.join(saved_model_dir, "lasso_model.joblib"),
+        "Support Vector Regressor (SVR)": os.path.join(saved_model_dir, "svr_model.joblib"),
+        "Decision Tree": os.path.join(saved_model_dir, "decision_tree_model.joblib"),
+        "Random Forest": os.path.join(saved_model_dir, "random_forest_model.joblib"),
+        "K-Nearest Neighbors": os.path.join(saved_model_dir, "knn_model.joblib")
     }
 
     model_choice = st.sidebar.selectbox("Select Model", list(available_models.keys()))
     selected_model_file = available_models[model_choice]
 
     # ------------------------------
-    # STEP 5: LOAD MODEL & PREDICT
+    # STEP 3: LOAD MODEL & PREDICT
     # ------------------------------
     st.header("📂 Prediction")
 
@@ -143,5 +143,6 @@ if uploaded_file:
             st.success(f"🎯 Predicted Admission Probability using {model_choice}: **{prediction*100:.2f}%**")
     else:
         st.warning(f"⚠️ {selected_model_file} not found. Please train and save this model first.")
+
 else:
     st.info("Please upload the admission dataset CSV to start EDA and predictions.")
