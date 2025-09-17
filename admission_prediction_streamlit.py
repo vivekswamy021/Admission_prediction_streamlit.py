@@ -124,14 +124,13 @@ available_models = {
     "Random Forest": os.path.join(saved_model_dir, "random_forest_model.joblib"),
     "KNN": os.path.join(saved_model_dir, "knn_model.joblib")}
 
+model_choice = st.sidebar.selectbox("Select Model", list(available_models.keys()))
+selected_model_file = available_models[model_choice]
 
-    model_choice = st.sidebar.selectbox("Select Model", list(available_models.keys()))
-    selected_model_file = available_models[model_choice]
-
-    # ------------------------------
-    # STEP 3: LOAD MODEL & PREDICT
-    # ------------------------------
-    st.header("📂 Prediction")
+# ------------------------------
+# STEP 3: LOAD MODEL & PREDICT
+# ------------------------------
+st.header("📂 Prediction")
 
     if os.path.exists(selected_model_file):
         @st.cache_resource
