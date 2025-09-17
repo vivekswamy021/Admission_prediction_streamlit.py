@@ -109,7 +109,7 @@ if uploaded_file:
     # STEP 2: MODEL SELECTION
     # ------------------------------
     st.sidebar.header("⚙️ Choose Model")
-    saved_model_dir = "/content/saved_models"  # full path to your saved models
+    saved_model_dir = "saved_models"  # full path to your saved models
 
     available_models = {
         "Linear Regression": os.path.join(saved_model_dir, "linear_regression_models.joblib"),
