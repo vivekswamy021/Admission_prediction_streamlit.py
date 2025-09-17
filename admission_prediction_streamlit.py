@@ -62,19 +62,3 @@ if os.path.exists(selected_model_file):
         st.success(f"🎯 Predicted Admission Probability using {model_choice}: **{prediction:.2f}**")
 else:
     st.warning(f"⚠️ {selected_model_file} not found. Please train and save this model first.")
-
-# ------------------------------
-# STEP 4: DOWNLOAD MODELS
-# ------------------------------
-st.subheader("📥 Download Trained Models")
-
-# look for models in current folder
-for model_file in available_models.values():
-    if os.path.exists(model_file):
-        with open(model_file, "rb") as f:
-            st.download_button(
-                label=f"Download {model_file}",
-                data=f.read(),   # ✅ must use read()
-                file_name=model_file,
-                mime="application/octet-stream"
-            )
