@@ -2,13 +2,6 @@ import streamlit as st
 import numpy as np
 import joblib
 import os
-from sklearn.model_selection import GridSearchCV
-from sklearn.linear_model import LinearRegression, Lasso
-from sklearn.svm import SVR
-from sklearn.tree import DecisionTreeRegressor
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.neighbors import KNeighborsRegressor
-from sklearn.metrics import mean_squared_error, r2_score
 
 st.set_page_config(page_title="🎓 Admission Prediction", layout="wide")
 
@@ -41,8 +34,9 @@ input_features = np.array([[gre, toefl, uni_rating, sop, lor, cgpa, research]])
 # ------------------------------
 st.sidebar.header("⚙️ Choose Model")
 
+# 👇 match your actual saved model names
 available_models = {
-    "Linear Regression": "linear_regression_model(1).joblib",
+    "Linear Regression": "linear_regression_model (1).joblib",  # fixed filename
     "Lasso Regression": "lasso_model.joblib",
     "Support Vector Regressor (SVR)": "svr_model.joblib",
     "Decision Tree": "decision_tree_model.joblib",
@@ -57,7 +51,8 @@ model_choice = st.sidebar.selectbox("Select Model", list(available_models.keys()
 # ------------------------------
 st.header("📂 Prediction")
 
-selected_model_file = os.path.join("saved_models", available_models[model_choice])
+# search in current folder first
+selected_model_file = available_models[model_choice]
 
 if os.path.exists(selected_model_file):
     model = joblib.load(selected_model_file)
@@ -66,19 +61,20 @@ if os.path.exists(selected_model_file):
         prediction = model.predict(input_features)[0]
         st.success(f"🎯 Predicted Admission Probability using {model_choice}: **{prediction:.2f}**")
 else:
-    st.warning(f"⚠️ {available_models[model_choice]} not found. Please train and save this model first.")
+    st.warning(f"⚠️ {selected_model_file} not found. Please train and save this model first.")
 
 # ------------------------------
 # STEP 4: DOWNLOAD MODELS
 # ------------------------------
 st.subheader("📥 Download Trained Models")
-models_dir = "saved_models"
-if os.path.exists(models_dir):
-    for model_file in os.listdir(models_dir):
-        with open(os.path.join(models_dir, model_file), "rb") as f:
+
+# look for models in current folder
+for model_file in available_models.values():
+    if os.path.exists(model_file):
+        with open(model_file, "rb") as f:
             st.download_button(
                 label=f"Download {model_file}",
-                data=f,
+                data=f.read(),   # ✅ must use read()
                 file_name=model_file,
                 mime="application/octet-stream"
             )
