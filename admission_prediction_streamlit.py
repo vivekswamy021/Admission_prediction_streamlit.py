@@ -115,7 +115,7 @@ if uploaded_file:
     saved_model_dir = "saved_models"  # folder where your joblib models are stored
 
     available_models = {
-        "Linear Regression": os.path.join(saved_model_dir, "linear_regression_model (1).joblib"),
+        "Linear Regression": os.path.join(saved_model_dir, "linear_regression_models.joblib"),
         "Lasso Regression": os.path.join(saved_model_dir, "lasso_model.joblib"),
         "Support Vector Regressor (SVR)": os.path.join(saved_model_dir, "svr_model.joblib"),
         "Decision Tree": os.path.join(saved_model_dir, "decision_tree_model.joblib"),
