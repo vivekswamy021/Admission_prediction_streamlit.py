@@ -10,7 +10,6 @@ import os
 # PAGE CONFIG
 # ------------------------------
 st.set_page_config(page_title="🎓 Admission Prediction", layout="wide")
-
 st.title("🎓 Admission Probability Prediction & EDA")
 st.markdown("""
 Upload the admission dataset to explore it with **Univariate, Bivariate, and Multivariate analysis**,  
@@ -47,7 +46,6 @@ if uploaded_file:
                                          ["Univariate Analysis", "Bivariate Analysis", "Multivariate Analysis"])
 
     st.header(f"📈 {analysis_type}")
-
     numeric_cols = ['GRE_Score', 'TOEFL_Score', 'University_Rating', 'SOP_Rating', 'LOR', 'CGPA', 'Research']
 
     if analysis_type == "Univariate Analysis":
@@ -61,8 +59,8 @@ if uploaded_file:
         st.pyplot(fig)
 
     elif analysis_type == "Bivariate Analysis":
-        x_feature = st.selectbox("Select X-axis Feature", numeric_cols)
-        y_feature = st.selectbox("Select Y-axis Feature", numeric_cols)
+        x_feature = st.selectbox("Select X-axis Feature", numeric_cols, index=0)
+        y_feature = st.selectbox("Select Y-axis Feature", numeric_cols, index=1)
         fig, ax = plt.subplots()
         ax.scatter(df[x_feature], df[y_feature])
         ax.set_xlabel(x_feature)
@@ -95,7 +93,6 @@ if uploaded_file:
 
     input_features = np.array([[gre, toefl, uni_rating, sop, lor, cgpa, research]])
 
-    # Show input summary
     st.subheader("📝 Input Features Summary")
     input_dict = {
         "GRE Score": gre,
@@ -112,25 +109,24 @@ if uploaded_file:
     # STEP 2: MODEL SELECTION
     # ------------------------------
     st.sidebar.header("⚙️ Choose Model")
-    saved_model_dir = "saved_models"  # folder where your joblib models are stored
+    saved_model_dir = "/content/saved_models"  # full path to your saved models
 
-    saved_model_dir = "/content/saved_models"
+    available_models = {
+        "Linear Regression": os.path.join(saved_model_dir, "linear_regression_models.joblib"),
+        "Lasso Regression": os.path.join(saved_model_dir, "lasso_model.joblib"),
+        "SVR": os.path.join(saved_model_dir, "svr_model.joblib"),
+        "Decision Tree": os.path.join(saved_model_dir, "decision_tree_model.joblib"),
+        "Random Forest": os.path.join(saved_model_dir, "random_forest_model.joblib"),
+        "KNN": os.path.join(saved_model_dir, "knn_model.joblib")
+    }
 
-available_models = {
-    "Linear Regression": os.path.join(saved_model_dir, "linear_regression_models.joblib"),
-    "Lasso Regression": os.path.join(saved_model_dir, "lasso_model.joblib"),
-    "SVR": os.path.join(saved_model_dir, "svr_model.joblib"),
-    "Decision Tree": os.path.join(saved_model_dir, "decision_tree_model.joblib"),
-    "Random Forest": os.path.join(saved_model_dir, "random_forest_model.joblib"),
-    "KNN": os.path.join(saved_model_dir, "knn_model.joblib")}
+    model_choice = st.sidebar.selectbox("Select Model", list(available_models.keys()))
+    selected_model_file = available_models[model_choice]
 
-model_choice = st.sidebar.selectbox("Select Model", list(available_models.keys()))
-selected_model_file = available_models[model_choice]
-
-# ------------------------------
-# STEP 3: LOAD MODEL & PREDICT
-# ------------------------------
-st.header("📂 Prediction")
+    # ------------------------------
+    # STEP 3: LOAD MODEL & PREDICT
+    # ------------------------------
+    st.header("📂 Prediction")
 
     if os.path.exists(selected_model_file):
         @st.cache_resource
