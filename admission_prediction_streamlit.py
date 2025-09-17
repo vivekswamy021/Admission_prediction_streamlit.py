@@ -116,11 +116,11 @@ if uploaded_file:
 
     available_models = {
         "Linear Regression": os.path.join(saved_model_dir, "linear_regression_models.joblib"),
-        "Lasso Regression": os.path.join(saved_model_dir, "lasso_model.joblib"),
-        "Support Vector Regressor (SVR)": os.path.join(saved_model_dir, "svr_model.joblib"),
-        "Decision Tree": os.path.join(saved_model_dir, "decision_tree_model.joblib"),
-        "Random Forest": os.path.join(saved_model_dir, "random_forest_model.joblib"),
-        "K-Nearest Neighbors": os.path.join(saved_model_dir, "knn_model.joblib")
+        "Lasso Regression": os.path.join(saved_model_dir, "lasso_models.joblib"),
+        "Support Vector Regressor (SVR)": os.path.join(saved_model_dir, "svr_models.joblib"),
+        "Decision Tree": os.path.join(saved_model_dir, "decision_tree_models.joblib"),
+        "Random Forest": os.path.join(saved_model_dir, "random_forest_models.joblib"),
+        "K-Nearest Neighbors": os.path.join(saved_model_dir, "knn_models.joblib")
     }
 
     model_choice = st.sidebar.selectbox("Select Model", list(available_models.keys()))
