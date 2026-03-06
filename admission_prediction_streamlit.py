@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import joblib
 import os
+from sklearn.linear_model import LinearRegression
 
 st.set_page_config(page_title="🎓 Admission Prediction", layout="wide")
 
@@ -26,7 +27,8 @@ uploaded_file = st.sidebar.file_uploader("Upload admission dataset CSV", type=["
 if uploaded_file:
     df = pd.read_csv(uploaded_file)
     
-    # Rename columns for consistency
+    # Rename columns for consistency (handling potential trailing spaces in CSV)
+    df.columns = [c.strip() for c in df.columns]
     df = df.rename(columns={
         'GRE Score': 'GRE_Score',
         'TOEFL Score': 'TOEFL_Score',
@@ -54,19 +56,15 @@ if uploaded_file:
         feature = st.selectbox("Select Feature for Histogram", numeric_cols)
         bins = st.slider("Number of bins", 5, 50, 10)
         fig, ax = plt.subplots()
-        ax.hist(df[feature], bins=bins, rwidth=0.8)
+        ax.hist(df[feature].dropna(), bins=bins, color='skyblue', edgecolor='black')
         ax.set_title(f"Distribution of {feature}")
-        ax.set_xlabel(feature)
-        ax.set_ylabel("Count")
         st.pyplot(fig)
     
     elif analysis_type == "Bivariate Analysis":
         x_feature = st.selectbox("Select X-axis Feature", numeric_cols, index=0)
-        y_feature = st.selectbox("Select Y-axis Feature", numeric_cols, index=1)
+        y_feature = st.selectbox("Select Y-axis Feature", numeric_cols, index=5)
         fig, ax = plt.subplots()
-        ax.scatter(df[x_feature], df[y_feature])
-        ax.set_xlabel(x_feature)
-        ax.set_ylabel(y_feature)
+        sns.scatterplot(data=df, x=x_feature, y=y_feature, ax=ax)
         ax.set_title(f"{x_feature} vs {y_feature}")
         st.pyplot(fig)
     
@@ -75,10 +73,6 @@ if uploaded_file:
         fig, ax = plt.subplots(figsize=(10, 6))
         sns.heatmap(df[numeric_cols].corr(), annot=True, cmap="coolwarm", ax=ax)
         st.pyplot(fig)
-
-        st.subheader("Pairplot (Scatterplot Matrix)")
-        pairplot_fig = sns.pairplot(df[numeric_cols])
-        st.pyplot(pairplot_fig.fig)
 
 # ------------------------------
 # STEP 1: USER INPUT FORM
@@ -93,19 +87,12 @@ lor = st.sidebar.slider("LOR Rating", 1.0, 5.0, 3.0)
 cgpa = st.sidebar.number_input("CGPA", 0.0, 10.0, 8.0)
 research = st.sidebar.selectbox("Research Experience", [0, 1])
 
+# Match the feature order used during training
 input_features = np.array([[gre, toefl, uni_rating, sop, lor, cgpa, research]])
 
 st.subheader("📝 Input Features Summary")
-input_dict = {
-    "GRE Score": gre,
-    "TOEFL Score": toefl,
-    "University Rating": uni_rating,
-    "SOP Rating": sop,
-    "LOR": lor,
-    "CGPA": cgpa,
-    "Research": research
-}
-st.table(input_dict)
+input_df = pd.DataFrame([input_features[0]], columns=["GRE", "TOEFL", "Uni Rating", "SOP", "LOR", "CGPA", "Research"])
+st.table(input_df)
 
 # ------------------------------
 # STEP 2: MODEL SELECTION
@@ -113,12 +100,9 @@ st.table(input_dict)
 st.sidebar.header("⚙️ Choose Model")
 
 available_models = {
-    "Linear Regression": "linear_regression_models.joblib",  # replace with your actual path
+    "Linear Regression": "linear_regression_models.joblib",
     "Lasso Regression": "lasso_models.joblib",
-    "Support Vector Regressor (SVR)": "svr_models.joblib",
-    "Decision Tree": "decision_tree_models.joblib",
-    "Random Forest": "random_forest_models.joblib",
-    "K-Nearest Neighbors": "knn_models.joblib"
+    "Random Forest": "random_forest_models.joblib"
 }
 
 model_choice = st.sidebar.selectbox("Select Model", list(available_models.keys()))
@@ -133,6 +117,9 @@ if os.path.exists(selected_model_file):
     model = joblib.load(selected_model_file)
     if st.button("🔮 Predict Admission Probability"):
         prediction = model.predict(input_features)[0]
+        # Ensure prediction is within 0-1 range
+        prediction = max(0, min(1, prediction))
         st.success(f"🎯 Predicted Admission Probability using {model_choice}: **{prediction:.2f}**")
 else:
-    st.warning(f"⚠️ {selected_model_file} not found. Please train and save this model first.")
+    st.error(f"⚠️ Model file '{selected_model_file}' not found in the repository.")
+    st.info("Make sure you have uploaded your .joblib files to GitHub along with this script.")
