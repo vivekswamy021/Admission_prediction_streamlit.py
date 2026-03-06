@@ -83,9 +83,9 @@ input_data = np.array([[gre, toefl, uni_rating, sop, lor, cgpa, research]])
 st.sidebar.header("⚙️ 4. Model Selection")
 
 available_models = {
-    "Linear Regression": "linear_regression_model.joblib",
-    "Random Forest": "random_forest_model.joblib",
-    "SVR": "svr_model.joblib",
+    "Linear Regression": "linear_regression_models.joblib",
+    "Random Forest": "random_forest_models.joblib",
+    "SVR": "svr_models.joblib",
     "KNN": "knn_models.joblib",
     "Lasso": "lasso_models.joblib",
     "Decision_Tree": "decision_tree_models.joblib"
