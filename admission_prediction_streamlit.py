@@ -85,7 +85,10 @@ st.sidebar.header("⚙️ 4. Model Selection")
 available_models = {
     "Linear Regression": "linear_regression_model.joblib",
     "Random Forest": "random_forest_model.joblib",
-    "SVR": "svr_model.joblib"
+    "SVR": "svr_model.joblib",
+    "KNN": "knn_models.joblib",
+    "Lasso": "lasso_models.joblib",
+    "Decision_Tree": "decision_tree_models.joblib"
 }
 
 model_choice = st.sidebar.selectbox("Choose Model", list(available_models.keys()))
